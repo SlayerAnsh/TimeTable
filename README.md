@@ -17,3 +17,15 @@
 - `Number of Room Preferences` is greater than 0 then room will be alloted only from the preferences. Which means if no room is free from preferences then the subject wont be alloted any room even though some other room may be availbale.
 - `Number of Room Preferences` is arranged in high to low priority. That is room mentioned first will be given higher priority.
 - `Room Size` should be maxmimum possible size of room. That is if room size is 100 then it means that room can accomodate at max 100 students (maximum crowded)
+
+### Features:
+- Highly flexible with time slots.
+- Can include features like pre-occupied slots.
+- Super Fast
+- Easy to Debug
+- Generate Different Files for each view (Class, Faculty, Room)
+- Room preference for each class
+- Zero clash gaurantee
+- Easily integradable with other algorithms (which i will include in near future)
+- Easily Modified with need.
+- Multiple Time Table Generator.
