@@ -20,6 +20,8 @@
 
 ### Features:
 - Highly flexible with time slots.
+- Generates correct time table for more than 2 groups (increase in size of new batches really need this feature)
+- Efficient Room Distributer (Small Batch size will get room with small room size)
 - Can include features like pre-occupied slots.
 - Super Fast
 - Easy to Debug
