@@ -45,9 +45,11 @@ int main(){
     sol->setSubjects();
 
     bool success = false;
-    int max_iter = 100;
+    int max_iter = 10;
 
     vector<int> successfullIterations;
+
+    sol->DEBUG = false;
     
     while(max_iter>0)
     {
@@ -65,7 +67,7 @@ int main(){
             sub->printDetails();
         }
 
-        sol->T_WIDTH = 35;
+        sol->T_WIDTH = 50;
 
         sol->printTable(max_iter);
         sol->makeFacultyView(max_iter);

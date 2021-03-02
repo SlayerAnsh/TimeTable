@@ -115,6 +115,7 @@ string Subject::printTableDetails()
 class Solution
 {
 public:
+	bool DEBUG = false;
 	int DAYS;
 	int SLOTS;
 	int SLOT_LENGHT;
@@ -427,7 +428,8 @@ bool Solution::runBestFit()
 	while(priority.size()>0)
 	{
 		sort(priority.begin(),priority.end(),&sortPriority);
-		cout<<"\nid: "<<priority[priority.size()-1].first<<" "<<priority[priority.size()-1].second;
+		if(DEBUG)
+			cout<<"\nid: "<<priority[priority.size()-1].first<<" "<<priority[priority.size()-1].second;
 		string p_id = priority[priority.size()-1].first;
 
 		pair<int,int> cur_slot;
@@ -436,7 +438,8 @@ bool Solution::runBestFit()
 			if(sub->f_id != p_id || sub->slot.size()>0)
 				continue;
 
-			cout<<"\nCur Sub: "<<sub->printTableDetails();
+			if(DEBUG)
+				cout<<"\nCur Sub: "<<sub->printTableDetails();
 
 			bool slot_found = false;
 			
@@ -444,7 +447,8 @@ bool Solution::runBestFit()
 			{
 				if(!dayAllowed(sub,day))
 				{
-					cout<<" (Day: "<<day<<")";
+					if(DEBUG)
+						cout<<" (Day: "<<day<<")";
 					continue;
 				}
 
@@ -454,7 +458,8 @@ bool Solution::runBestFit()
 				{
 					if(sub->cont_slot_req + start > SLOTS)
 					{
-						cout<<" (Slot Overflow: "<<start<<")";
+						if(DEBUG)
+							cout<<" (Slot Overflow: "<<start<<")";
 						continue;
 					}
 
@@ -465,13 +470,15 @@ bool Solution::runBestFit()
 						cur_slot.second = slot;
 						if(!facultyAllowed(sub,cur_slot))
 						{
-							cout<<" (F err: "<<day<<" "<<slot<<")";
+							if(DEBUG)
+								cout<<" (F err: "<<day<<" "<<slot<<")";
 							allSlotsPossible = false;
 							break;
 						}
 						if(!courseAllowed(sub,cur_slot))
 						{
-							cout<<" (C err: "<<day<<" "<<slot<<")";
+							if(DEBUG)
+								cout<<" (C err: "<<day<<" "<<slot<<")";
 							allSlotsPossible = false;
 							break;
 						}
@@ -482,18 +489,21 @@ bool Solution::runBestFit()
 					cur_slot.second = start;
 					if(!lunchAllowed(sub,cur_slot))
 					{
-						cout<<" (L err: "<<day<<" "<<start<<")";
+						if(DEBUG)
+							cout<<" (L err: "<<day<<" "<<start<<")";
 						continue;
 					}
 					string room_alloted = AllotRoom(sub,cur_slot);
 					
 					if(room_alloted == "-1")
 					{
-						cout<<" (R err: "<<day<<" "<<start<<")";
+						if(DEBUG)
+							cout<<" (R err: "<<day<<" "<<start<<")";
 						continue;
 					}
 					slot_found = true;
-					cout<<" Found";
+					if(DEBUG)
+						cout<<" Found";
 					sub->r_id = room_alloted;
 					for(int slot = start;slot < start + sub->cont_slot_req;slot++)
 					{
@@ -762,7 +772,7 @@ void Solution::makeRoomView(int iteration)
 	{
 		r_map[sub->r_id].push_back(*sub);
 	}
-
+	
 	for(auto r:r_map)
 	{
 		out<<"\n"<<r.first<<"\n";
