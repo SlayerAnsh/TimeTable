@@ -144,7 +144,7 @@ public:
 	
 	void setSubjects();
 	
-	bool runBestFit();
+	bool runBestFit(int);
 	
 	bool dayAllowed(const Subject* sub, const int& day);
 	
@@ -366,6 +366,20 @@ bool Solution::lunchAllowed(const Subject* sub, const pair<int,int>& slot)
 	if(LunchSlots.size() <= count + occupied)
 		return false;
 
+	occupied = 0;
+	for(auto lunch:LunchSlots)
+	{	
+		if(Faculties.find(sub->f_id)==Faculties.end())
+			Faculties[sub->f_id] = new Faculty;
+		if(Faculties[sub->f_id]->slots.count(make_pair(slot.first,lunch)))
+		{
+			occupied++;
+		}
+	}
+
+	if(LunchSlots.size() <= count + occupied)
+		return false;
+
 	return true;
 }
 
@@ -404,8 +418,9 @@ bool sortPriority(pair<string,int>& p1, pair<string,int>& p2)
 	return p1.second < p2.second;
 }
 
-bool Solution::runBestFit()
+bool Solution::runBestFit(int seed)
 {
+
 	shuffle(subjects.begin(), subjects.end(), default_random_engine(seed));
 	vector<pair<string,int>> priority;
 
@@ -442,94 +457,191 @@ bool Solution::runBestFit()
 				cout<<"\nCur Sub: "<<sub->printTableDetails();
 
 			bool slot_found = false;
-			
-			for(int day=0;day<DAYS;day++)
+			srand(time(NULL) + seed);
+			bool random = rand()%seed;
+			if(random)
 			{
-				if(!dayAllowed(sub,day))
-				{
-					if(DEBUG)
-						cout<<" (Day: "<<day<<")";
-					continue;
-				}
 
-				cur_slot.first = day;
-
-				for(int start=0;start<SLOTS;start++)
+				for(int day=0;day<DAYS;day++)
 				{
-					if(sub->cont_slot_req + start > SLOTS)
+					if(!dayAllowed(sub,day))
 					{
 						if(DEBUG)
-							cout<<" (Slot Overflow: "<<start<<")";
+							cout<<" (Day: "<<day<<")";
 						continue;
 					}
 
-					bool allSlotsPossible = true;
+					cur_slot.first = day;
 
-					for(int slot = start;slot < start + sub->cont_slot_req;slot++)
+					for(int start=0;start<SLOTS;start++)
 					{
-						cur_slot.second = slot;
-						if(!facultyAllowed(sub,cur_slot))
+						if(sub->cont_slot_req + start > SLOTS)
 						{
 							if(DEBUG)
-								cout<<" (F err: "<<day<<" "<<slot<<")";
-							allSlotsPossible = false;
-							break;
+								cout<<" (Slot Overflow: "<<start<<")";
+							continue;
 						}
-						if(!courseAllowed(sub,cur_slot))
+
+						bool allSlotsPossible = true;
+
+						for(int slot = start;slot < start + sub->cont_slot_req;slot++)
+						{
+							cur_slot.second = slot;
+							if(!facultyAllowed(sub,cur_slot))
+							{
+								if(DEBUG)
+									cout<<" (F err: "<<day<<" "<<slot<<")";
+								allSlotsPossible = false;
+								break;
+							}
+							if(!courseAllowed(sub,cur_slot))
+							{
+								if(DEBUG)
+									cout<<" (C err: "<<day<<" "<<slot<<")";
+								allSlotsPossible = false;
+								break;
+							}
+						}
+						if(allSlotsPossible == false)
+							continue;
+
+						cur_slot.second = start;
+						if(!lunchAllowed(sub,cur_slot))
 						{
 							if(DEBUG)
-								cout<<" (C err: "<<day<<" "<<slot<<")";
-							allSlotsPossible = false;
-							break;
+								cout<<" (L err: "<<day<<" "<<start<<")";
+							continue;
 						}
-					}
-					if(allSlotsPossible == false)
-						continue;
-
-					cur_slot.second = start;
-					if(!lunchAllowed(sub,cur_slot))
-					{
-						if(DEBUG)
-							cout<<" (L err: "<<day<<" "<<start<<")";
-						continue;
-					}
-					string room_alloted = AllotRoom(sub,cur_slot);
-					
-					if(room_alloted == "-1")
-					{
-						if(DEBUG)
-							cout<<" (R err: "<<day<<" "<<start<<")";
-						continue;
-					}
-					slot_found = true;
-					if(DEBUG)
-						cout<<" Found";
-					sub->r_id = room_alloted;
-					for(int slot = start;slot < start + sub->cont_slot_req;slot++)
-					{
-						cur_slot.second = slot;
-						sub->slot.insert(cur_slot);
-						Faculties[sub->f_id]->slots.insert(cur_slot);
-						Rooms[room_alloted]->slots.insert(cur_slot);
-						for(auto& grp:sub->groups)
-						{	
-							if(Courses.find(sub->c_id + grp)==Courses.end())
-								Courses[sub->c_id + grp] = new Course;
-							Courses[sub->c_id + grp]->slots.insert(cur_slot);
+						string room_alloted = AllotRoom(sub,cur_slot);
+						
+						if(room_alloted == "-1")
+						{
+							if(DEBUG)
+								cout<<" (R err: "<<day<<" "<<start<<")";
+							continue;
 						}
+						slot_found = true;
+						if(DEBUG)
+							cout<<" Found";
+						sub->r_id = room_alloted;
+						for(int slot = start;slot < start + sub->cont_slot_req;slot++)
+						{
+							cur_slot.second = slot;
+							sub->slot.insert(cur_slot);
+							Faculties[sub->f_id]->slots.insert(cur_slot);
+							Rooms[room_alloted]->slots.insert(cur_slot);
+							for(auto& grp:sub->groups)
+							{	
+								if(Courses.find(sub->c_id + grp)==Courses.end())
+									Courses[sub->c_id + grp] = new Course;
+								Courses[sub->c_id + grp]->slots.insert(cur_slot);
+							}
+						}
+						break;
 					}
-					break;
+					if(slot_found)
+					{
+						string sub_id = sub->c_id + sub->s_id + to_string(sub->tut);
+						for(auto grp: sub->groups)
+						{
+							if(SubsDay.find(sub_id + grp)==SubsDay.end())
+								SubsDay[sub_id + grp] = new SubDay;	
+							SubsDay[sub_id + grp]->days.insert(day);
+						}
+						break;
+					}
 				}
-				if(slot_found)
+			}
+			else
+			{
+				for(int day=DAYS-1;day>=0;day--)
 				{
-					string sub_id = sub->c_id + sub->s_id + to_string(sub->tut);
-					for(auto grp: sub->groups)
+					if(!dayAllowed(sub,day))
 					{
-						if(SubsDay.find(sub_id + grp)==SubsDay.end())
-							SubsDay[sub_id + grp] = new SubDay;	
-						SubsDay[sub_id + grp]->days.insert(day);
+						if(DEBUG)
+							cout<<" (Day: "<<day<<")";
+						continue;
 					}
-					break;
+
+					cur_slot.first = day;
+
+					for(int start=0;start<SLOTS;start++)
+					{
+						if(sub->cont_slot_req + start > SLOTS)
+						{
+							if(DEBUG)
+								cout<<" (Slot Overflow: "<<start<<")";
+							continue;
+						}
+
+						bool allSlotsPossible = true;
+
+						for(int slot = start;slot < start + sub->cont_slot_req;slot++)
+						{
+							cur_slot.second = slot;
+							if(!facultyAllowed(sub,cur_slot))
+							{
+								if(DEBUG)
+									cout<<" (F err: "<<day<<" "<<slot<<")";
+								allSlotsPossible = false;
+								break;
+							}
+							if(!courseAllowed(sub,cur_slot))
+							{
+								if(DEBUG)
+									cout<<" (C err: "<<day<<" "<<slot<<")";
+								allSlotsPossible = false;
+								break;
+							}
+						}
+						if(allSlotsPossible == false)
+							continue;
+
+						cur_slot.second = start;
+						if(!lunchAllowed(sub,cur_slot))
+						{
+							if(DEBUG)
+								cout<<" (L err: "<<day<<" "<<start<<")";
+							continue;
+						}
+						string room_alloted = AllotRoom(sub,cur_slot);
+						
+						if(room_alloted == "-1")
+						{
+							if(DEBUG)
+								cout<<" (R err: "<<day<<" "<<start<<")";
+							continue;
+						}
+						slot_found = true;
+						if(DEBUG)
+							cout<<" Found";
+						sub->r_id = room_alloted;
+						for(int slot = start;slot < start + sub->cont_slot_req;slot++)
+						{
+							cur_slot.second = slot;
+							sub->slot.insert(cur_slot);
+							Faculties[sub->f_id]->slots.insert(cur_slot);
+							Rooms[room_alloted]->slots.insert(cur_slot);
+							for(auto& grp:sub->groups)
+							{	
+								if(Courses.find(sub->c_id + grp)==Courses.end())
+									Courses[sub->c_id + grp] = new Course;
+								Courses[sub->c_id + grp]->slots.insert(cur_slot);
+							}
+						}
+						break;
+					}
+					if(slot_found)
+					{
+						string sub_id = sub->c_id + sub->s_id + to_string(sub->tut);
+						for(auto grp: sub->groups)
+						{
+							if(SubsDay.find(sub_id + grp)==SubsDay.end())
+								SubsDay[sub_id + grp] = new SubDay;	
+							SubsDay[sub_id + grp]->days.insert(day);
+						}
+						break;
+					}
 				}
 			}
 			priority[priority.size()-1].second -= sub->cont_slot_req;

@@ -36,45 +36,51 @@ int main(){
 
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-     
+    
+
 
     Solution* sol = new Solution();
+    cin>>sol->DEBUG;
     sol->setSlots();
     sol->setRooms();
     sol->setLunch();
     sol->setSubjects();
 
     bool success = false;
-    int max_iter = 10;
+    int max_iter = 1000;
 
     vector<int> successfullIterations;
-
-    sol->DEBUG = false;
     
-    while(max_iter>0)
+    for(int i=1;i<=max_iter;i++)
     {
-        cout<<"\n\n---------------TRIES LEFT: "<<max_iter<<"--------------------\n\n";
+        if(sol->DEBUG)
+            cout<<"\n\n---------------TRIES LEFT: "<<max_iter - i<<"--------------------\n\n";
         sol->resetData();
-        sol->seed = time(NULL) + max_iter;
-        success = sol->runBestFit();
+        sol->seed = time(NULL) + i;
+        success = sol->runBestFit(i);
 
         if(success)
-            successfullIterations.push_back(max_iter);
+            successfullIterations.push_back(i);
 
-        cout<<"\n\nGarbage: "<<sol->garbage.size();
-        for(auto sub:sol->garbage)
+        if(sol->DEBUG)
         {
-            sub->printDetails();
+        cout<<"\n\nGarbage: "<<sol->garbage.size();
+            for(auto sub:sol->garbage)
+            {
+                sub->printDetails();
+            }
         }
 
         sol->T_WIDTH = 50;
-
-        sol->printTable(max_iter);
-        sol->makeFacultyView(max_iter);
-        sol->makeClassView(max_iter);
-        sol->makeRoomView(max_iter);
-
-        max_iter--;
+        if(success)
+        {
+            sol->printTable(i);
+            sol->makeFacultyView(i);
+            sol->makeClassView(i);
+            sol->makeRoomView(i);
+        }
+        if(successfullIterations.size()>10)
+            break;
     }
     
     cout<<"\n"<<setw(50)<<setfill('x')<<""<<"\nSUCCESFULL ITERATIONS: ";
