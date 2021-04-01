@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include <chrono> 
+#include <chrono>
 #include "sol.hpp"
 
 using namespace std::chrono;
@@ -27,20 +27,18 @@ CSD3 f3 0 3 1 60 0
 CSD4 f4 1 1 0 180 1 LAB_1
 */
 
+int main()
+{
 
-int main(){
-
-    freopen("input.txt","r",stdin);
-    freopen("output.txt","w",stdout);
+    freopen("input.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
     auto start = high_resolution_clock::now();
 
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    
 
-
-    Solution* sol = new Solution();
-    cin>>sol->DEBUG;
+    Solution *sol = new Solution();
+    cin >> sol->DEBUG;
     sol->setSlots();
     sol->setRooms();
     sol->setLunch();
@@ -50,48 +48,50 @@ int main(){
     int max_iter = 1000;
 
     vector<int> successfullIterations;
-    
-    for(int i=1;i<=max_iter;i++)
+
+    for (int i = 1; i <= max_iter; i++)
     {
-        if(sol->DEBUG)
-            cout<<"\n\n---------------TRIES LEFT: "<<max_iter - i<<"--------------------\n\n";
+        if (sol->DEBUG)
+            cout << "\n\n---------------TRIES LEFT: " << max_iter - i << "--------------------\n\n";
         sol->resetData();
         sol->seed = time(NULL) + i;
         success = sol->runBestFit(i);
 
-        if(success)
+        if (success)
             successfullIterations.push_back(i);
 
-        if(sol->DEBUG)
+        if (sol->DEBUG)
         {
-        cout<<"\n\nGarbage: "<<sol->garbage.size();
-            for(auto sub:sol->garbage)
+            cout << "\n\nGarbage: " << sol->garbage.size();
+            for (auto sub : sol->garbage)
             {
                 sub->printDetails();
             }
         }
 
         sol->T_WIDTH = 50;
-        if(success)
+        if (success)
         {
             sol->printTable(i);
             sol->makeFacultyView(i);
             sol->makeClassView(i);
             sol->makeRoomView(i);
         }
-        if(successfullIterations.size()>10)
+        if (successfullIterations.size() > 10)
             break;
     }
-    
-    cout<<"\n"<<setw(50)<<setfill('x')<<""<<"\nSUCCESFULL ITERATIONS: ";
-    for(auto s:successfullIterations)
-        cout<<"( "<<s<<" ) ";
 
-    auto stop = high_resolution_clock::now(); 
-    double duration = duration_cast<nanoseconds>(stop - start).count(); 
+    cout << "\n"
+         << setw(50) << setfill('x') << ""
+         << "\nSUCCESFULL ITERATIONS: ";
+    for (auto s : successfullIterations)
+        cout << "( " << s << " ) ";
+
+    auto stop = high_resolution_clock::now();
+    double duration = duration_cast<nanoseconds>(stop - start).count();
     duration *= 1e-9;
-    cout << "\nTime taken by program is : " << fixed  
-         << duration << setprecision(9); 
+    cout << "\nTime taken by program is : " << fixed
+         << duration << setprecision(9);
     cout << " sec" << endl;
 
     return 0;

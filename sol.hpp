@@ -458,7 +458,7 @@ bool Solution::runBestFit(int seed)
 
 			bool slot_found = false;
 			srand(time(NULL) + seed);
-			bool random = rand()%seed;
+			bool random = rand()%(int)sqrt(seed + 1);
 			if(random)
 			{
 
